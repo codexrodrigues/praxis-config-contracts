@@ -9,9 +9,9 @@ The first contract is deliberately small:
 - `PublishedRuleSnapshotHeadScope` identifies tenant, environment and RuleSet;
 - `PublishedRuleSnapshotHead` separates immutable snapshot content identity from
   mutable activation identity and preserves whether the returned view came from
-  publication, rollback or an active-head read;
+  publication, explicit activation, rollback or an active-head read;
 - `PublishedRuleSnapshotHeadActivationType` closes that provenance vocabulary as
-  `PUBLISHED`, `ROLLED_BACK` or `ACTIVE`;
+  `PUBLISHED`, `ACTIVATED`, `ROLLED_BACK` or `ACTIVE`;
 - `PublishedRuleSnapshotHeadReader` is the read port implemented by a governed
   Config adapter or by an authenticated remote adapter owned by the host.
 
@@ -26,39 +26,25 @@ own `PublishedRuleSnapshot` and deterministic compilation/evaluation.
 <dependency>
   <groupId>io.github.codexrodrigues</groupId>
   <artifactId>praxis-config-contracts</artifactId>
-  <version>0.1.0-beta.1</version>
+  <version>0.1.0-beta.2</version>
 </dependency>
 ```
 
-The coordinate is not consumable until its repository and official Maven Central
-release workflow exist and this version has been published. A local Maven install
-is not downstream release evidence.
+Version `0.1.0-beta.2` adds explicit activation provenance for selecting a newer
+immutable publication. It remains compatible with the beta.1 scope, head and
+reader contracts. A local Maven install is not downstream release evidence.
 
-## Adoption order
+## Beta.2 adoption order
 
-1. Create the dedicated public repository and copy this scaffold without changing
-   the `0.1.0-beta.1` contract line.
-2. Add the official Java release workflow: clean Java 21 verification on `main`,
-   then version/tag creation by `workflow_dispatch`, followed by Central Portal
-   publication only from the accepted `v<semver>` tag. Configure Central token,
-   GPG key/passphrase and the release automation token before creating a tag.
-3. Publish `0.1.0-beta.1`, verify its POM, main JAR, sources, Javadocs and signatures
-   in Maven Central, and build a clean isolated consumer against that public
-   coordinate. Do not use `mvn install` as this proof.
-4. In the next compatible `praxis-config-starter` RC, depend on the public contract,
-   implement `PublishedRuleSnapshotHeadReader` from the verified active head and
-   map `DomainRuleSnapshotActivationResponse.activationType` to the closed enum.
-   Remove the old in-starter Java
-   reader only in the same beta migration cycle; keep the HTTP response compatible.
-5. Publish that Config Starter RC and migrate Quickstart runtime consumption to
-   the lightweight head type. Quickstart may still depend on the full starter
-   because it deliberately embeds the control plane; its proof establishes API
-   compatibility and last-known-good activation.
-6. Only after both public coordinates exist, let Ergon depend on contracts plus
-   `praxis-rules-engine` and supply an authenticated adapter appropriate to its
-   deployment topology. Prove tenant/environment/RuleSet scope, missing head,
-   unavailable control plane, stale revision, rollback ETag rotation, invalid
-   snapshot and last-known-good retention.
+1. Verify and publish `0.1.0-beta.2` through the official tag workflow.
+2. Update the next `praxis-config-starter` RC to the public beta.2 coordinate and
+   expose explicit newer-version activation as `ACTIVATED` while preserving
+   `ROLLED_BACK` for selection of an older publication.
+3. Update Quickstart from the public Config Starter coordinate and prove both
+   operator paths with strong `If-Match` and authenticated scope.
+4. Ergon continues to consume `GET .../head`, whose returned activation type is
+   `ACTIVE`; no host adapter migration is required for this additive provenance
+   value. Prove ETag rotation and last-known-good after downstream publication.
 
 ## Gate
 
