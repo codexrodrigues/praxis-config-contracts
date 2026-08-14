@@ -4,7 +4,7 @@
 used by Java hosts that consume published Praxis configuration without embedding
 the complete `praxis-config-starter` control plane.
 
-The first contract is deliberately small:
+The contracts are deliberately small:
 
 - `PublishedRuleSnapshotHeadScope` identifies tenant, environment and RuleSet;
 - `PublishedRuleSnapshotHead` separates immutable snapshot content identity from
@@ -14,6 +14,13 @@ The first contract is deliberately small:
   `PUBLISHED`, `ACTIVATED`, `ROLLED_BACK` or `ACTIVE`;
 - `PublishedRuleSnapshotHeadReader` is the read port implemented by a governed
   Config adapter or by an authenticated remote adapter owned by the host.
+- `RuleSetCompositionCandidateRequest` and `RuleSetCompositionCandidateCommand`
+  identify an exact promoted definition, validity window and inspected digest;
+- `RuleSetCompositionCandidate`, `RuleSetCompositionSource` and
+  `RuleSetCompositionAction` expose only safe provenance and server-authorized
+  operations, never the executable RuleSet graph;
+- `RuleSetCompositionPublication` is a redacted activation receipt that keeps
+  immutable content identity separate from the mutable head identity.
 
 This artifact owns no persistence, authoring, approval, publication, rollback,
 HTTP client, Spring auto-configuration or controller. `praxis-config-starter`
@@ -26,25 +33,23 @@ own `PublishedRuleSnapshot` and deterministic compilation/evaluation.
 <dependency>
   <groupId>io.github.codexrodrigues</groupId>
   <artifactId>praxis-config-contracts</artifactId>
-  <version>0.1.0-beta.2</version>
+  <version>0.1.0-beta.3</version>
 </dependency>
 ```
 
-Version `0.1.0-beta.2` adds explicit activation provenance for selecting a newer
-immutable publication. It remains compatible with the beta.1 scope, head and
-reader contracts. A local Maven install is not downstream release evidence.
+Version `0.1.0-beta.3` adds the host-neutral Policy Studio composition command
+and safe-view vocabulary. It does not add a compositor, HTTP client, controller
+or persistence. Beta.2 head contracts remain unchanged. A local Maven install
+is not downstream release evidence.
 
-## Beta.2 adoption order
+## Beta.3 adoption order
 
-1. Verify and publish `0.1.0-beta.2` through the official tag workflow.
-2. Update the next `praxis-config-starter` RC to the public beta.2 coordinate and
-   expose explicit newer-version activation as `ACTIVATED` while preserving
-   `ROLLED_BACK` for selection of an older publication.
-3. Update Quickstart from the public Config Starter coordinate and prove both
-   operator paths with strong `If-Match` and authenticated scope.
-4. Ergon continues to consume `GET .../head`, whose returned activation type is
-   `ACTIVE`; no host adapter migration is required for this additive provenance
-   value. Prove ETag rotation and last-known-good after downstream publication.
+1. Verify and publish `0.1.0-beta.3` through the official tag workflow.
+2. Migrate the Quickstart host compositor from its private DTOs to these records
+   without changing its HTTP JSON shape.
+3. Keep composition logic host-owned and snapshot lifecycle Config-owned.
+4. Implement a second host compositor only after its domain-specific admission
+   gate; conformance must cover digest, ETag, actions and scoped identities.
 
 ## Gate
 

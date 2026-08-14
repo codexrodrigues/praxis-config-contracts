@@ -6,7 +6,7 @@
 
     <groupId>io.github.codexrodrigues</groupId>
     <artifactId>praxis-config-contracts</artifactId>
-    <version>0.1.0-beta.2</version>
+    <version>0.1.0-beta.3</version>
     <packaging>jar</packaging>
 
     <name>Praxis Config Contracts</name>
