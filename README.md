@@ -21,6 +21,10 @@ The contracts are deliberately small:
   operations, never the executable RuleSet graph;
 - `RuleSetCompositionPublication` is a redacted activation receipt that keeps
   immutable content identity separate from the mutable head identity.
+- `DomainRuleTestRunRecordRequest` and its result/evidence records are the
+  framework-neutral transport vocabulary used by runtime hosts to submit
+  idempotent, redacted candidate/active/baseline evidence to the Config control
+  plane without importing Starter persistence or auto-configuration.
 
 This artifact owns no persistence, authoring, approval, publication, rollback,
 HTTP client, Spring auto-configuration or controller. `praxis-config-starter`
@@ -33,23 +37,26 @@ own `PublishedRuleSnapshot` and deterministic compilation/evaluation.
 <dependency>
   <groupId>io.github.codexrodrigues</groupId>
   <artifactId>praxis-config-contracts</artifactId>
-  <version>0.1.0-beta.3</version>
+  <version>0.1.0-beta.4-SNAPSHOT</version>
 </dependency>
 ```
 
-Version `0.1.0-beta.3` adds the host-neutral Policy Studio composition command
-and safe-view vocabulary. It does not add a compositor, HTTP client, controller
-or persistence. Beta.2 head contracts remain unchanged. A local Maven install
-is not downstream release evidence.
+Version `0.1.0-beta.4` adds the host-neutral Policy Studio Test Run transport:
+an explicit idempotency key, one independent redacted baseline lane per
+scenario, sanitized operational evidence and the corresponding receipt. It does
+not add a recorder implementation, HTTP client, controller or persistence.
+Those remain owned by the Config control plane and each authenticated host
+adapter. A local Maven install is not downstream release evidence.
 
-## Beta.3 adoption order
+## Beta.4 adoption order
 
-1. Verify and publish `0.1.0-beta.3` through the official tag workflow.
-2. Migrate the Quickstart host compositor from its private DTOs to these records
-   without changing its HTTP JSON shape.
-3. Keep composition logic host-owned and snapshot lifecycle Config-owned.
-4. Implement a second host compositor only after its domain-specific admission
-   gate; conformance must cover digest, ETag, actions and scoped identities.
+1. Verify and publish `0.1.0-beta.4` through the official tag workflow.
+2. Migrate Config Starter and Quickstart from Starter-owned Test Run DTOs to
+   these records without creating compatibility aliases.
+3. Keep scenario execution, baseline observation and redaction host-owned;
+   Config owns validation, idempotency, persistence and stage gates.
+4. Implement the Ergon transport adapter against this artifact only after its
+   domain-specific admission gate; never import Config Starter into the host.
 
 ## Gate
 
