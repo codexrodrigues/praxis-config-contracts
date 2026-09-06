@@ -1,8 +1,8 @@
 name: Release Praxis Config Contracts
-
-on:
+'on':
   push:
-    tags: ['v*']
+    tags:
+      - v*
   workflow_dispatch:
     inputs:
       create_tag:
@@ -19,24 +19,32 @@ on:
         type: choice
         required: true
         default: prerelease
-        options: [patch, minor, major, prerelease]
+        options:
+          - patch
+          - minor
+          - major
+          - prerelease
       preid:
         description: Pre-release identifier when bump=prerelease.
         type: string
         required: true
         default: beta
-
 concurrency:
-  group: ${{ github.event_name == 'workflow_dispatch' && format('release-manual-{0}', github.run_id) || format('release-{0}', github.ref) }}
+  group: java-release-${{ github.event_name }}
   cancel-in-progress: false
-
 jobs:
   create_tag:
-    if: github.event_name == 'workflow_dispatch' && inputs.create_tag
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
+      - name: Require intentional release preparation
+        env:
+          CREATE_TAG: ${{ inputs.create_tag }}
+          RELEASE_PAT: ${{ secrets.RELEASE_PAT }}
+        run: |
+          [[ "$GITHUB_REF" == refs/heads/main && "$CREATE_TAG" == true && -n "$RELEASE_PAT" ]] || { echo '::error::Use main, create_tag=true and a configured RELEASE_PAT to trigger the tag publication.'; exit 1; }
       - name: Require release automation token
         env:
           RELEASE_PAT: ${{ secrets.RELEASE_PAT }}
@@ -52,6 +60,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.RELEASE_PAT }}
+          ref: ${{ github.sha }}
       - name: Set up Java 21
         uses: actions/setup-java@v5
         with:
@@ -72,18 +81,18 @@ jobs:
         run: |
           set -euo pipefail
           git fetch --tags --force
-          VERSION='${{ inputs.version }}'
+          VERSION='${RELEASE_INPUT_VERSION}'
           if [[ -z "$VERSION" ]]; then
             latest="$(git tag -l 'v[0-9]*' | sed 's/^v//' | sort -V | tail -n1 || true)"
             base="${latest%%-*}"
             if [[ -z "$base" ]]; then base='0.1.0'; fi
             IFS='.' read -r major minor patch <<< "$base"
-            case '${{ inputs.bump }}' in
+            case '${RELEASE_INPUT_BUMP}' in
               major) VERSION="$((major + 1)).0.0" ;;
               minor) VERSION="$major.$((minor + 1)).0" ;;
               patch) VERSION="$major.$minor.$((patch + 1))" ;;
               prerelease)
-                preid='${{ inputs.preid }}'
+                preid='${RELEASE_INPUT_PREID}'
                 [[ "$preid" =~ ^[0-9A-Za-z-]+$ ]] || { echo 'Invalid preid' >&2; exit 1; }
                 existing="$(git tag -l "v${base}-${preid}.*" | sed 's/^v//' | sort -V | tail -n1 || true)"
                 if [[ -n "$existing" ]]; then
@@ -99,6 +108,10 @@ jobs:
             exit 1
           }
           echo "value=$VERSION" >> "$GITHUB_OUTPUT"
+        env:
+          RELEASE_INPUT_VERSION: ${{ inputs.version }}
+          RELEASE_INPUT_BUMP: ${{ inputs.bump }}
+          RELEASE_INPUT_PREID: ${{ inputs.preid }}
       - name: Persist version and push tag atomically
         shell: bash
         run: |
@@ -114,8 +127,10 @@ jobs:
           git add pom.xml
           if ! git diff --cached --quiet; then git commit -m "chore: release $tag"; fi
           git tag -a "$tag" -m "Release $tag"
+          git fetch origin main
+          [[ "$(git rev-parse origin/main)" == "$GITHUB_SHA" ]] || { echo "::error::main advanced; prepare the new revision deliberately."; exit 1; }
           git push --atomic origin "HEAD:main" "$tag"
-
+    timeout-minutes: 10
   publish:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
@@ -132,6 +147,12 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+      - name: Require a tag from main
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          [[ "$GITHUB_REF" == refs/tags/v* ]] || { echo '::error::Publication requires a version tag.'; exit 1; }
+          git merge-base --is-ancestor HEAD origin/main || { echo '::error::Tagged revision is not on main.'; exit 1; }
       - name: Set up Java 21 and Maven Central credentials
         uses: actions/setup-java@v5
         with:
@@ -181,31 +202,18 @@ jobs:
             exit 1
           }
           echo "value=$version" >> "$GITHUB_OUTPUT"
-      - name: Build, test and sign
-        run: >-
-          mvn --batch-mode --no-transfer-progress -P release
-          -Dgpg.skip=false
-          -Dgpg.keyname="$GPG_KEY_ID"
-          -Dgpg.passphrase="$MAVEN_GPG_PASSPHRASE"
-          clean verify
-      - name: Verify signed artifacts
+      - name: Verify lightweight runtime dependencies
         shell: bash
         run: |
           set -euo pipefail
-          version='${{ steps.version.outputs.value }}'
-          test -f "target/praxis-config-contracts-${version}.jar.asc"
-          test -f "target/praxis-config-contracts-${version}-sources.jar.asc"
-          test -f "target/praxis-config-contracts-${version}-javadoc.jar.asc"
-      - name: Publish to Maven Central
-        run: >-
-          mvn --batch-mode --no-transfer-progress -P release
-          -Dgpg.skip=false
-          -Dgpg.keyname="$GPG_KEY_ID"
-          -Dgpg.passphrase="$MAVEN_GPG_PASSPHRASE"
-          -DautoPublish=true
-          -DwaitUntil=PUBLISHED
-          -DwaitMaxTime=7200
-          clean verify org.sonatype.central:central-publishing-maven-plugin:publish
+          mvn --batch-mode --no-transfer-progress dependency:tree -Dscope=runtime -DoutputFile=target/runtime-dependencies.txt
+          if grep -E 'org\.springframework|org\.springframework\.boot|jakarta\.persistence' target/runtime-dependencies.txt; then
+            echo 'Forbidden runtime dependency detected.' >&2
+            exit 1
+          fi
+      - name: Build, test, sign and publish the tagged release
+        run: mvn --batch-mode --no-transfer-progress -P release -Dgpg.skip=false -Dgpg.keyname="$GPG_KEY_ID" -Dgpg.passphrase="$MAVEN_GPG_PASSPHRASE"
+          -DautoPublish=true -DwaitUntil=PUBLISHED -DwaitMaxTime=7200 clean verify org.sonatype.central:central-publishing-maven-plugin:publish
       - name: Verify Maven Central availability
         shell: bash
         run: |

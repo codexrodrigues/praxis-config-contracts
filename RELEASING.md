@@ -17,7 +17,7 @@ The active public line is `0.1.0-beta.*`. Compatible corrections remain on this 
 
 ## Release flow
 
-1. Confirm the intended commit is on remote `main` and CI is green.
+1. Confirm the intended commit is on remote `main` and local validation is green.
 2. Run locally with Java 21:
 
    ```powershell
@@ -26,7 +26,7 @@ The active public line is `0.1.0-beta.*`. Compatible corrections remain on this 
 
 3. In GitHub Actions, run **Release Praxis Config Contracts** on `main` with `create_tag=true` and either an explicit version or `bump`/`preid`.
 4. The workflow persists the resolved version in `pom.xml`, creates the annotated `v<semver>` tag and pushes both atomically.
-5. The tag run verifies the tagged version, signs the POM/JAR/sources/Javadocs and publishes through the Central Portal.
+5. The tag run verifies ancestry, the tagged version and lightweight dependencies, runs tests, then signs the POM/JAR/sources/Javadocs and publishes through the Central Portal.
 6. Wait for the Maven Central availability probe to pass.
 7. Build an isolated consumer against the public coordinate. A local Maven install is not release evidence.
 

@@ -68,3 +68,7 @@ mvn clean verify
 
 Releases are created only through the official GitHub Actions workflow. See
 [RELEASING.md](RELEASING.md) for secrets, tagging and Maven Central verification.
+
+## Política de CI e publicação
+
+Validação local durante desenvolvimento; Actions apenas no fechamento necessário de versões. Consulte [ACTIONS-RELEASE-POLICY.md](ACTIONS-RELEASE-POLICY.md) para gatilhos, gates e recuperação.
