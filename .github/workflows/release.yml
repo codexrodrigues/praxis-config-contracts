@@ -81,18 +81,18 @@ jobs:
         run: |
           set -euo pipefail
           git fetch --tags --force
-          VERSION='${RELEASE_INPUT_VERSION}'
+          VERSION="${RELEASE_INPUT_VERSION}"
           if [[ -z "$VERSION" ]]; then
             latest="$(git tag -l 'v[0-9]*' | sed 's/^v//' | sort -V | tail -n1 || true)"
             base="${latest%%-*}"
             if [[ -z "$base" ]]; then base='0.1.0'; fi
             IFS='.' read -r major minor patch <<< "$base"
-            case '${RELEASE_INPUT_BUMP}' in
+            case "${RELEASE_INPUT_BUMP}" in
               major) VERSION="$((major + 1)).0.0" ;;
               minor) VERSION="$major.$((minor + 1)).0" ;;
               patch) VERSION="$major.$minor.$((patch + 1))" ;;
               prerelease)
-                preid='${RELEASE_INPUT_PREID}'
+                preid="${RELEASE_INPUT_PREID}"
                 [[ "$preid" =~ ^[0-9A-Za-z-]+$ ]] || { echo 'Invalid preid' >&2; exit 1; }
                 existing="$(git tag -l "v${base}-${preid}.*" | sed 's/^v//' | sort -V | tail -n1 || true)"
                 if [[ -n "$existing" ]]; then

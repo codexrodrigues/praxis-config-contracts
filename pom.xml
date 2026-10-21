@@ -38,7 +38,7 @@
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <praxis-rules-engine.version>0.1.0-beta.15</praxis-rules-engine.version>
+        <praxis-rules-engine.version>0.1.0-beta.16</praxis-rules-engine.version>
         <junit.version>5.11.4</junit.version>
     </properties>
 
