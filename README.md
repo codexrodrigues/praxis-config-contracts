@@ -8,10 +8,11 @@ The contracts are deliberately small:
 
 - `PublishedRuleSnapshotHeadScope` identifies tenant, environment and RuleSet;
 - `PublishedRuleSnapshotHead` separates immutable snapshot content identity from
-  mutable activation identity and preserves whether the returned view came from
-  publication, explicit activation, rollback or an active-head read;
+  mutable activation identity and preserves explicit activation, rollback or an
+  active-head read, including retained historical activation provenance;
 - `PublishedRuleSnapshotHeadActivationType` closes that provenance vocabulary as
-  `PUBLISHED`, `ACTIVATED`, `ROLLED_BACK` or `ACTIVE`;
+  `ACTIVATED`, `ROLLED_BACK` or `ACTIVE`; `PUBLISHED` remains a historical
+  provenance value for prior publication that also selected a head;
 - `PublishedRuleSnapshotHeadReader` is the read port implemented by a governed
   Config adapter or by an authenticated remote adapter owned by the host.
 - `RuleSetCompositionCandidateRequest` and `RuleSetCompositionCandidateCommand`
@@ -19,8 +20,10 @@ The contracts are deliberately small:
 - `RuleSetCompositionCandidate`, `RuleSetCompositionSource` and
   `RuleSetCompositionAction` expose only safe provenance and server-authorized
   operations, never the executable RuleSet graph;
-- `RuleSetCompositionPublication` is a redacted activation receipt that keeps
-  immutable content identity separate from the mutable head identity.
+- `RuleSetCompositionPublication` is a redacted publication-only receipt containing
+  `snapshotKey`, `ruleSetKey`, `ruleSetVersion` and `snapshotContentHash`. It carries
+  no head ETag, activation revision or activation classification and grants no
+  execution readiness. Explicit activation produces the separate head contract.
 - `DomainRuleTestRunRecordRequest` and its result/evidence records are the
   framework-neutral transport vocabulary used by runtime hosts to submit
   idempotent, redacted candidate/active/baseline evidence to the Config control
@@ -37,9 +40,37 @@ own `PublishedRuleSnapshot` and deterministic compilation/evaluation.
 <dependency>
   <groupId>io.github.codexrodrigues</groupId>
   <artifactId>praxis-config-contracts</artifactId>
-  <version>0.1.0-beta.4-SNAPSHOT</version>
+  <version>${praxis.config.contracts.version}</version>
 </dependency>
 ```
+
+Set `praxis.config.contracts.version` to the exact officially published release
+containing the required contract. The G2 publication-only change below is source
+until its official release; the earlier `0.1.0-beta.4` does not provide it.
+
+## Publication-only migration (G2)
+
+The source now depends on `praxis-rules-engine` `0.1.0-beta.16` (engine contract
+1.5). `RuleSetCompositionPublication` keeps the four immutable identity fields
+that already existed and removes `headEtag`, `activationRevision` and
+`activationType`. This is a deliberate beta breaking change, without a parallel
+receipt, nullable activation placeholders or a compatibility mode.
+
+A Config publication adapter maps those identities from the approved stored
+snapshot and its canonical content hash. Publication does not create an active
+head; a host can review or preload the immutable candidate before the separate
+governed activation. The content hash must never substitute for a mutable head
+ETag. `PublishedRuleSnapshotHead` still requires a real non-null selection,
+positive activation revision and control-plane provenance. Historical
+`PUBLISHED` provenance is retained without granting new execution authority.
+
+Publish the revised Contracts artifact officially before adopting its exact
+coordinate in Config/host consumers. Update their constructor calls and HTTP
+mappings in the same cycle: publication returns the immutable receipt, while
+activation/rollback returns the separate head view. Then prove consumer builds
+with published dependencies; a local Maven install does not close that gate.
+
+## Earlier Test Run contract
 
 Version `0.1.0-beta.4` adds the host-neutral Policy Studio Test Run transport:
 an explicit idempotency key, one independent redacted baseline lane per

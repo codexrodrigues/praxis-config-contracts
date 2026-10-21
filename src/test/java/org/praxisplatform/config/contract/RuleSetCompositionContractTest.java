@@ -3,7 +3,11 @@ package org.praxisplatform.config.contract;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -45,15 +49,47 @@ class RuleSetCompositionContractTest {
     }
 
     @Test
-    void publicationSeparatesSnapshotHashFromMutableHeadIdentity() {
+    void publicationReceiptSerializesOnlyImmutableIdentityWithoutClaimingActivation() throws Exception {
         var publication = new RuleSetCompositionPublication(
-                "snapshot-2", "ruleset-a", 2, "C".repeat(64), "head-2", 2,
-                PublishedRuleSnapshotHeadActivationType.PUBLISHED);
+                "snapshot-2", "ruleset-a", 2, "C".repeat(64));
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode wire = mapper.valueToTree(publication);
+        Set<String> fields = new HashSet<>();
+        wire.fieldNames().forEachRemaining(fields::add);
 
-        assertEquals("C".repeat(64), publication.snapshotContentHash());
-        assertEquals("head-2", publication.headEtag());
+        assertEquals(Set.of("snapshotKey", "ruleSetKey", "ruleSetVersion", "snapshotContentHash"), fields);
+        assertEquals("snapshot-2", wire.path("snapshotKey").asText());
+        assertEquals("ruleset-a", wire.path("ruleSetKey").asText());
+        assertEquals(2, wire.path("ruleSetVersion").asInt());
+        assertEquals("C".repeat(64), wire.path("snapshotContentHash").asText());
+        assertEquals(publication, mapper.treeToValue(wire, RuleSetCompositionPublication.class));
+    }
+
+    @Test
+    void publicationReceiptNormalizesIdentityButRejectsMissingOrInvalidContentIdentity() {
+        var publication = new RuleSetCompositionPublication(
+                " snapshot-2 ", " ruleset-a ", 2, " " + DIGEST + " ");
+        assertEquals("snapshot-2", publication.snapshotKey());
+        assertEquals("ruleset-a", publication.ruleSetKey());
+        assertEquals(DIGEST, publication.snapshotContentHash());
+
+        assertThrows(NullPointerException.class, () -> new RuleSetCompositionPublication(
+                null, "ruleset-a", 2, DIGEST));
+        assertThrows(NullPointerException.class, () -> new RuleSetCompositionPublication(
+                "snapshot-2", null, 2, DIGEST));
+        assertThrows(NullPointerException.class, () -> new RuleSetCompositionPublication(
+                "snapshot-2", "ruleset-a", 2, null));
         assertThrows(IllegalArgumentException.class, () -> new RuleSetCompositionPublication(
-                "snapshot-2", "ruleset-a", 2, "bad", "head-2", 2,
-                PublishedRuleSnapshotHeadActivationType.PUBLISHED));
+                " ", "ruleset-a", 2, DIGEST));
+        assertThrows(IllegalArgumentException.class, () -> new RuleSetCompositionPublication(
+                "snapshot-2", " ", 2, DIGEST));
+        for (int version : new int[]{0, -1}) {
+            assertThrows(IllegalArgumentException.class, () -> new RuleSetCompositionPublication(
+                    "snapshot-2", "ruleset-a", version, DIGEST));
+        }
+        for (String invalidHash : List.of(" ", "bad", "a".repeat(64), "A".repeat(63), "G".repeat(64))) {
+            assertThrows(IllegalArgumentException.class, () -> new RuleSetCompositionPublication(
+                    "snapshot-2", "ruleset-a", 2, invalidHash));
+        }
     }
 }

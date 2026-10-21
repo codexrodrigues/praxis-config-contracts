@@ -8,8 +8,9 @@ import org.praxisplatform.rules.contract.PublishedRuleSnapshot;
  * Host-facing view of the mutable head that selects one immutable published snapshot.
  *
  * <p>The snapshot and its content hash identify immutable rule content. The opaque head ETag and
- * monotonic activation revision identify the mutable selection and therefore change on publication
- * and rollback, including rollback to content seen previously.</p>
+ * monotonic activation revision identify the mutable selection and therefore change on explicit activation
+ * and rollback, including rollback to content seen previously. Publication alone does not select
+ * or mutate this head.</p>
  *
  * @param snapshot immutable runtime-neutral snapshot selected by the head
  * @param snapshotContentHash canonical uppercase SHA-256 of the immutable snapshot content
