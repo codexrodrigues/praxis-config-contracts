@@ -45,15 +45,14 @@ class RuleSetCompositionContractTest {
     }
 
     @Test
-    void publicationSeparatesSnapshotHashFromMutableHeadIdentity() {
-        var publication = new RuleSetCompositionPublication(
-                "snapshot-2", "ruleset-a", 2, "C".repeat(64), "head-2", 2,
-                PublishedRuleSnapshotHeadActivationType.PUBLISHED);
+    void publicationIdentifiesTheOperationWithoutInventingAnActiveHead() {
+        var publication = new RuleSetCompositionPublication("snapshot-2", "ruleset-a", "evaluate", 2, "C".repeat(64));
 
         assertEquals("C".repeat(64), publication.snapshotContentHash());
-        assertEquals("head-2", publication.headEtag());
-        assertThrows(IllegalArgumentException.class, () -> new RuleSetCompositionPublication(
-                "snapshot-2", "ruleset-a", 2, "bad", "head-2", 2,
-                PublishedRuleSnapshotHeadActivationType.PUBLISHED));
+        assertEquals("evaluate", publication.operationKey());
+        var json=new com.fasterxml.jackson.databind.ObjectMapper().valueToTree(publication);
+        assertEquals(false,json.has("headEtag"));
+        assertEquals(false,json.has("activationRevision"));
+        assertThrows(IllegalArgumentException.class, () -> new RuleSetCompositionPublication("snapshot-2", "ruleset-a", "evaluate", 2, "bad"));
     }
 }

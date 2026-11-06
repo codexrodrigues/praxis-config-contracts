@@ -6,7 +6,7 @@
 
     <groupId>io.github.codexrodrigues</groupId>
     <artifactId>praxis-config-contracts</artifactId>
-    <version>0.1.0-beta.4</version>
+    <version>0.1.0-beta.5-ergon.20261106.1</version>
     <packaging>jar</packaging>
 
     <name>Praxis Config Contracts</name>
@@ -35,10 +35,11 @@
     </scm>
 
     <properties>
+        <project.build.outputTimestamp>2026-11-06T20:30:00Z</project.build.outputTimestamp>
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <praxis-rules-engine.version>0.1.0-beta.15</praxis-rules-engine.version>
+        <praxis-rules-engine.version>0.1.0-beta.19-ergon.20261106.1</praxis-rules-engine.version>
         <junit.version>5.11.4</junit.version>
     </properties>
 

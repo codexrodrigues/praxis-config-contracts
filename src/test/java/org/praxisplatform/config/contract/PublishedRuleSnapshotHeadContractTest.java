@@ -30,13 +30,17 @@ class PublishedRuleSnapshotHeadContractTest {
     @Test
     void scopeIsExplicitAndNormalized() {
         PublishedRuleSnapshotHeadScope scope =
-                new PublishedRuleSnapshotHeadScope(" tenant-a ", " development ", " ruleset-a ");
+                new PublishedRuleSnapshotHeadScope(" tenant-a ", " development ", " ruleset-a ", " evaluate ");
 
         assertEquals("tenant-a", scope.tenantId());
         assertEquals("development", scope.environment());
         assertEquals("ruleset-a", scope.ruleSetKey());
+        assertEquals("evaluate", scope.operationKey());
+        assertTrue(!scope.equals(new PublishedRuleSnapshotHeadScope("tenant-a", "development", "ruleset-a", "delete")));
         assertThrows(IllegalArgumentException.class,
-                () -> new PublishedRuleSnapshotHeadScope("tenant-a", " ", "ruleset-a"));
+                () -> new PublishedRuleSnapshotHeadScope("tenant-a", "development", "ruleset-a", " "));
+        assertThrows(IllegalArgumentException.class,
+                () -> new PublishedRuleSnapshotHeadScope("tenant-a", " ", "ruleset-a", "evaluate"));
     }
 
     @Test
@@ -91,31 +95,15 @@ class PublishedRuleSnapshotHeadContractTest {
         PublishedRuleSnapshotHeadReader reader = scope -> Optional.empty();
 
         assertTrue(reader.findActive(
-                new PublishedRuleSnapshotHeadScope("tenant-a", "development", "ruleset-a")).isEmpty());
+                new PublishedRuleSnapshotHeadScope("tenant-a", "development", "ruleset-a", "evaluate")).isEmpty());
         assertThrows(ClassNotFoundException.class,
                 () -> Class.forName("org.springframework.context.ApplicationContext"));
         assertEquals(1, PublishedRuleSnapshotHeadReader.class.getDeclaredMethods().length);
     }
 
     private PublishedRuleSnapshot snapshot() throws Exception {
-        DecisionSlot slot = new DecisionSlot(
-                "eligibility",
-                DecisionStage.DOMAIN_DECISION,
-                SlotCardinality.SINGLE,
-                OverridePolicy.FORBIDDEN,
-                DecisionAggregationPolicy.SINGLE_RESULT);
-        DecisionBinding binding = new DecisionBinding(
-                "eligibility",
-                "eligibility",
-                DecisionSource.PRODUCT,
-                null,
-                RuleExecutorRef.jsonLogic(new ObjectMapper().readTree("{\"===\":[true,true]}")),
-                List.of(),
-                10,
-                true,
-                RuleDecision.DENY,
-                "NOT_ELIGIBLE",
-                List.of());
+        DecisionSlot slot = new DecisionSlot("eligibility", DecisionStage.DOMAIN_DECISION, SlotCardinality.SINGLE, OverridePolicy.FORBIDDEN, DecisionAggregationPolicy.SINGLE_RESULT, null, java.util.List.of());
+        DecisionBinding binding = new DecisionBinding("eligibility", "eligibility", DecisionSource.PRODUCT, null, RuleExecutorRef.jsonLogic(new ObjectMapper().readTree("{\"===\":[true,true]}")), List.of(), 10, true, RuleDecision.DENY, "NOT_ELIGIBLE", List.of(), null);
         RuleSetDefinition ruleSet = new RuleSetDefinition(
                 new RuleSetRef("benefits", "grants", "extraordinary-grant", "evaluate", 1),
                 List.of("request"),

@@ -72,3 +72,25 @@ Releases are created only through the official GitHub Actions workflow. See
 ## Política de CI e publicação
 
 Validação local durante desenvolvimento; Actions apenas no fechamento necessário de versões. Consulte [ACTIONS-RELEASE-POLICY.md](ACTIONS-RELEASE-POLICY.md) para gatilhos, gates e recuperação.
+
+## Candidato G3: identidade por operação
+
+`PublishedRuleSnapshotHeadScope` exige as quatro coordenadas: tenant, ambiente,
+família e operação. Operações da mesma família podem ter heads independentes;
+o leitor não escolhe uma operação padrão quando a seleção estiver incompleta.
+
+`RuleSetCompositionPublication` retorna somente a identidade imutável publicada:
+snapshot, família, operação, versão e hash. Publicação e ativação têm contratos
+distintos; ETag/revisão/tipo de ativação continuam no recibo de head. Não fabricar
+um head para completar o retorno do publisher. Os consumidores devem atualizar
+construtores, serialização e seleção no mesmo corte canônico, sem overload antigo.
+
+As coordenadas `ontology-g3-operations-r3-SNAPSHOT` são exclusivas da prova local.
+O teste consumidor usa o Engine atual com contrato 1.7; publicação e adoção pública
+continuam sujeitas ao workflow e aos gates oficiais.
+
+## Candidato G3: conjunto autoritativo de heads
+
+`PublishedRuleSnapshotHeadSetScope` exige tenant, ambiente, família e o conjunto exato de operações (1–64, sem duplicatas). `PublishedRuleSnapshotHeadSetReader` devolve uma única fotografia de storage, nunca um laço de leituras individuais. Ausência de qualquer operação devolve seleção ausente; falhas, corrupção e acesso recusado não equivalem a ausência.
+
+`PublishedRuleSnapshotHeadSet` valida todas as coordenadas, o estado ACTIVE e a propriedade comum da família. Seu fingerprint inclui hash do conteúdo, snapshot, ETag e revisão de ativação de cada head, detectando também A→B→A. Não constitui uma aprovação adicional nem um lock que atravesse bancos. O host continua responsável por vigência atual, contrato tipado, produto protegido e instalação atômica do conjunto completo. A porta de leitura individual mantém sua finalidade própria e não implementa essa garantia de conjunto.

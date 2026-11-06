@@ -1,0 +1,138 @@
+{
+  "baseCommit": "bb1aa0eada43428f4b7ad42d692767cc79ec4440",
+  "sourceStableDuringCapture": true,
+  "capturedFilesBeforeVersionTransform": {
+    ".gitattributes": {
+      "sha256": "302266a0b9a482b15b10e052bdde95531ddd827a64b2b674243cebdc91299720",
+      "bytes": 60
+    },
+    ".github/workflows/ci.yml": {
+      "sha256": "9a57bfb453fff9faeb7cd750961890358bbad1fe2e40b82252231c3d9a9b77d5",
+      "bytes": 1031
+    },
+    ".github/workflows/release.yml": {
+      "sha256": "84ea07bff8dfb5e5a0bace31b1b99e003dbe646568d731beddaba9f20549c26a",
+      "bytes": 9803
+    },
+    ".gitignore": {
+      "sha256": "94cf9bb56056e6d193ba74e3b270eb2e4558f463805526d59141a40aba8a8edf",
+      "bytes": 29
+    },
+    "ACTIONS-RELEASE-POLICY.md": {
+      "sha256": "1c49c9e86abc5ab5ae95448e28d1b62080b2921effb2384c66e244398fb23abd",
+      "bytes": 1501
+    },
+    "AGENTS.md": {
+      "sha256": "be85d22f60463307c84dd51aa2ed3eae86c35e906a40a3791bb4c15d042bd105",
+      "bytes": 2554
+    },
+    "README.md": {
+      "sha256": "ed04b8048f3055e19b5a115b34ff2549d4745aef887157564e9df2c45660d135",
+      "bytes": 5653
+    },
+    "RELEASING.md": {
+      "sha256": "31de442b74567043aaed91cd7afff94235befe3fbcc94fffcb830b064cd1337a",
+      "bytes": 1540
+    },
+    "pom.xml": {
+      "sha256": "fb10c15d2b20b64e5108d3ee4455fe46ac0fc39d15c71bf8e4ffcc4780562f77",
+      "bytes": 7949
+    },
+    "src/main/java/org/praxisplatform/config/contract/DomainRuleOperationalTestEvidence.java": {
+      "sha256": "7a86d612d287ae8b1fed13cf57a573d9a07deff8a7d8dfdd0d9a1c32bba511e5",
+      "bytes": 1081
+    },
+    "src/main/java/org/praxisplatform/config/contract/DomainRuleTestBaselineEvidence.java": {
+      "sha256": "4624f3e0857d3adfc89be1c4fbacf95a65f64100d3982773c3aa2bd1f57a318c",
+      "bytes": 656
+    },
+    "src/main/java/org/praxisplatform/config/contract/DomainRuleTestBaselineResult.java": {
+      "sha256": "e356bd04edf96bf6828169dc788f540e1d6f815d095e19ee9d63ff2d55bc6f3d",
+      "bytes": 1360
+    },
+    "src/main/java/org/praxisplatform/config/contract/DomainRuleTestRunRecordRequest.java": {
+      "sha256": "eda288b4a1c8d99a320c760bc1806aa64070d1aae02b8648b8711d0c7e9b355f",
+      "bytes": 2031
+    },
+    "src/main/java/org/praxisplatform/config/contract/DomainRuleTestRunResponse.java": {
+      "sha256": "30a019243009d951dc92b01976490a2e0b5256e8b16d9b874cf5b1b0cdda671e",
+      "bytes": 1746
+    },
+    "src/main/java/org/praxisplatform/config/contract/DomainRuleTestRunResultRequest.java": {
+      "sha256": "a3d6a052511a8ee5a3753f5590408936b4ff0500ae7a7e867fdcfb818b7d4e93",
+      "bytes": 2150
+    },
+    "src/main/java/org/praxisplatform/config/contract/DomainRuleTestRunResultResponse.java": {
+      "sha256": "0a2b199705aeba5bce86264fd900e578666c3ccd28f214baac91ce88f72fa6bd",
+      "bytes": 4213
+    },
+    "src/main/java/org/praxisplatform/config/contract/PublishedRuleSnapshotHead.java": {
+      "sha256": "f49f3bd8f8c118d3012f548f33d4d05d2f3f4a479c4196e27e758edadd755a42",
+      "bytes": 2314
+    },
+    "src/main/java/org/praxisplatform/config/contract/PublishedRuleSnapshotHeadActivationType.java": {
+      "sha256": "e8c887bce7991b0dc5854a5938c4d8e711b0e134ad6c8b246f02a69d3d4e02b9",
+      "bytes": 529
+    },
+    "src/main/java/org/praxisplatform/config/contract/PublishedRuleSnapshotHeadReader.java": {
+      "sha256": "e1e019ca72ec8d467e6de72b9b8ff0b606a5637a99cf95174c85a06fa3ba5736",
+      "bytes": 948
+    },
+    "src/main/java/org/praxisplatform/config/contract/PublishedRuleSnapshotHeadScope.java": {
+      "sha256": "ee6f7f194e114e73d56c654a0bd9396b030582b923b7768cd8161b5a098a1b84",
+      "bytes": 1149
+    },
+    "src/main/java/org/praxisplatform/config/contract/PublishedRuleSnapshotHeadSet.java": {
+      "sha256": "e29fa7deb4d94600ebf800a2bbf6566919d5f06db19c61b2c2341e88bc7cfca9",
+      "bytes": 2598
+    },
+    "src/main/java/org/praxisplatform/config/contract/PublishedRuleSnapshotHeadSetReader.java": {
+      "sha256": "57e11700cd3f48d66dc9ceb1c3c7200fced9a6f2540cecf740edf9bad21b3f77",
+      "bytes": 810
+    },
+    "src/main/java/org/praxisplatform/config/contract/PublishedRuleSnapshotHeadSetScope.java": {
+      "sha256": "5f069bd3a1d6975c0728754f1b38933060023b7aef80ef5e83a3d6a153783da9",
+      "bytes": 1542
+    },
+    "src/main/java/org/praxisplatform/config/contract/RuleSetCompositionAction.java": {
+      "sha256": "e0f45c3c2fa6a6a8a2a287a600807a0949e9a6871d493a78c5a71f81a7ea6690",
+      "bytes": 427
+    },
+    "src/main/java/org/praxisplatform/config/contract/RuleSetCompositionCandidate.java": {
+      "sha256": "8a1dcc233e9d8733fc865276ad403735a1c04cf7cb34144e5e48de4c9f467229",
+      "bytes": 2790
+    },
+    "src/main/java/org/praxisplatform/config/contract/RuleSetCompositionCandidateCommand.java": {
+      "sha256": "58bea4429ea8b4fc351808cf32c1ff4537b706ee0090720c842cc1187963a95d",
+      "bytes": 1875
+    },
+    "src/main/java/org/praxisplatform/config/contract/RuleSetCompositionCandidateRequest.java": {
+      "sha256": "25974519fed1759a5c842c5c5805d06921cd52d1f249ddf37b3463700bc9857c",
+      "bytes": 1265
+    },
+    "src/main/java/org/praxisplatform/config/contract/RuleSetCompositionPublication.java": {
+      "sha256": "abeb53f57d4f3fa88dcd7aaba552cb9d5ca153c9afa598e8d978de7447c24f8d",
+      "bytes": 1744
+    },
+    "src/main/java/org/praxisplatform/config/contract/RuleSetCompositionSource.java": {
+      "sha256": "6f55fab487ea0020c7bb1a98ffd04e068b385c47c8560165292561ba1cb5c0e0",
+      "bytes": 1179
+    },
+    "src/test/java/org/praxisplatform/config/contract/DomainRuleTestRunContractTest.java": {
+      "sha256": "72c165872704c1b0148ec3324beb1c407299f51e74a84694891465a295bd1e1f",
+      "bytes": 2005
+    },
+    "src/test/java/org/praxisplatform/config/contract/PublishedRuleSnapshotHeadContractTest.java": {
+      "sha256": "887635f74634716dc6806b81594f7175235e3593c9193b6734d91dbae47fb2e8",
+      "bytes": 6719
+    },
+    "src/test/java/org/praxisplatform/config/contract/PublishedRuleSnapshotHeadSetTest.java": {
+      "sha256": "4c313ef5851bd89b00ead63d2189fd59a2053c79f3eb73c3f5040a807b89cd44",
+      "bytes": 4299
+    },
+    "src/test/java/org/praxisplatform/config/contract/RuleSetCompositionContractTest.java": {
+      "sha256": "071db68606b191478502201220bad1d12fc8f98253477612ac169e00f8e1b0b6",
+      "bytes": 3053
+    }
+  }
+}
