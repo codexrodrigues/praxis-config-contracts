@@ -7,18 +7,21 @@ import java.util.Objects;
  *
  * @param tenantId governed tenant identity
  * @param environment governed environment identity
- * @param ruleSetKey stable RuleSet identity
+ * @param ruleSetKey stable RuleSet family identity
+ * @param operationKey exact operation evaluated by this head
  */
 public record PublishedRuleSnapshotHeadScope(
         String tenantId,
         String environment,
-        String ruleSetKey) {
+        String ruleSetKey,
+        String operationKey) {
 
-    /** Normalizes the three required scope coordinates. */
+    /** Normalizes the four required scope coordinates. */
     public PublishedRuleSnapshotHeadScope {
         tenantId = required(tenantId, "tenantId");
         environment = required(environment, "environment");
         ruleSetKey = required(ruleSetKey, "ruleSetKey");
+        operationKey = required(operationKey, "operationKey");
     }
 
     private static String required(String value, String field) {

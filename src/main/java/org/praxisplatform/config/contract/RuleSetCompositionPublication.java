@@ -4,20 +4,23 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
- * Safe publication-only receipt; immutable executable snapshot content remains private.
+ * Safe immutable-publication receipt; immutable executable snapshot content remains private.
  *
- * <p>Publication makes this immutable identity available for governed review and preload. It does
- * not select an active head or confer execution readiness. Mutable activation identity belongs
- * exclusively to {@link PublishedRuleSnapshotHead} after explicit selection.</p>
+ * <p>Publication makes this immutable identity of one exact operation available for governed
+ * review and preload. It does not select or create an active head nor confer execution readiness.
+ * Mutable activation identity belongs exclusively to {@link PublishedRuleSnapshotHead} after
+ * explicit selection.</p>
  *
  * @param snapshotKey immutable published snapshot identity
- * @param ruleSetKey stable host-owned RuleSet identity
+ * @param ruleSetKey stable host-owned RuleSet family identity
+ * @param operationKey exact operation whose immutable version was published
  * @param ruleSetVersion positive composed RuleSet version
  * @param snapshotContentHash uppercase SHA-256 over immutable executable content
  */
 public record RuleSetCompositionPublication(
         String snapshotKey,
         String ruleSetKey,
+        String operationKey,
         int ruleSetVersion,
         String snapshotContentHash) {
 
@@ -27,6 +30,7 @@ public record RuleSetCompositionPublication(
     public RuleSetCompositionPublication {
         snapshotKey = required(snapshotKey, "snapshotKey");
         ruleSetKey = required(ruleSetKey, "ruleSetKey");
+        operationKey = required(operationKey, "operationKey");
         if (ruleSetVersion < 1) throw new IllegalArgumentException("ruleSetVersion must be positive");
         snapshotContentHash = required(snapshotContentHash, "snapshotContentHash");
         if (!SHA_256.matcher(snapshotContentHash).matches()) {

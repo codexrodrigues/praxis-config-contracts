@@ -49,47 +49,56 @@ class RuleSetCompositionContractTest {
     }
 
     @Test
-    void publicationReceiptSerializesOnlyImmutableIdentityWithoutClaimingActivation() throws Exception {
+    void publicationReceiptSerializesOnlyImmutableOperationIdentityWithoutClaimingActivation() throws Exception {
         var publication = new RuleSetCompositionPublication(
-                "snapshot-2", "ruleset-a", 2, "C".repeat(64));
+                "snapshot-2", "ruleset-a", "evaluate", 2, "C".repeat(64));
         ObjectMapper mapper = new ObjectMapper();
         JsonNode wire = mapper.valueToTree(publication);
         Set<String> fields = new HashSet<>();
         wire.fieldNames().forEachRemaining(fields::add);
 
-        assertEquals(Set.of("snapshotKey", "ruleSetKey", "ruleSetVersion", "snapshotContentHash"), fields);
+        assertEquals(Set.of("snapshotKey", "ruleSetKey", "operationKey", "ruleSetVersion", "snapshotContentHash"),
+                fields);
         assertEquals("snapshot-2", wire.path("snapshotKey").asText());
         assertEquals("ruleset-a", wire.path("ruleSetKey").asText());
+        assertEquals("evaluate", wire.path("operationKey").asText());
         assertEquals(2, wire.path("ruleSetVersion").asInt());
         assertEquals("C".repeat(64), wire.path("snapshotContentHash").asText());
+        assertEquals(false, wire.has("headEtag"));
+        assertEquals(false, wire.has("activationRevision"));
         assertEquals(publication, mapper.treeToValue(wire, RuleSetCompositionPublication.class));
     }
 
     @Test
     void publicationReceiptNormalizesIdentityButRejectsMissingOrInvalidContentIdentity() {
         var publication = new RuleSetCompositionPublication(
-                " snapshot-2 ", " ruleset-a ", 2, " " + DIGEST + " ");
+                " snapshot-2 ", " ruleset-a ", " evaluate ", 2, " " + DIGEST + " ");
         assertEquals("snapshot-2", publication.snapshotKey());
         assertEquals("ruleset-a", publication.ruleSetKey());
+        assertEquals("evaluate", publication.operationKey());
         assertEquals(DIGEST, publication.snapshotContentHash());
 
         assertThrows(NullPointerException.class, () -> new RuleSetCompositionPublication(
-                null, "ruleset-a", 2, DIGEST));
+                null, "ruleset-a", "evaluate", 2, DIGEST));
         assertThrows(NullPointerException.class, () -> new RuleSetCompositionPublication(
-                "snapshot-2", null, 2, DIGEST));
+                "snapshot-2", null, "evaluate", 2, DIGEST));
         assertThrows(NullPointerException.class, () -> new RuleSetCompositionPublication(
-                "snapshot-2", "ruleset-a", 2, null));
+                "snapshot-2", "ruleset-a", null, 2, DIGEST));
+        assertThrows(NullPointerException.class, () -> new RuleSetCompositionPublication(
+                "snapshot-2", "ruleset-a", "evaluate", 2, null));
         assertThrows(IllegalArgumentException.class, () -> new RuleSetCompositionPublication(
-                " ", "ruleset-a", 2, DIGEST));
+                " ", "ruleset-a", "evaluate", 2, DIGEST));
         assertThrows(IllegalArgumentException.class, () -> new RuleSetCompositionPublication(
-                "snapshot-2", " ", 2, DIGEST));
+                "snapshot-2", " ", "evaluate", 2, DIGEST));
+        assertThrows(IllegalArgumentException.class, () -> new RuleSetCompositionPublication(
+                "snapshot-2", "ruleset-a", " ", 2, DIGEST));
         for (int version : new int[]{0, -1}) {
             assertThrows(IllegalArgumentException.class, () -> new RuleSetCompositionPublication(
-                    "snapshot-2", "ruleset-a", version, DIGEST));
+                    "snapshot-2", "ruleset-a", "evaluate", version, DIGEST));
         }
         for (String invalidHash : List.of(" ", "bad", "a".repeat(64), "A".repeat(63), "G".repeat(64))) {
             assertThrows(IllegalArgumentException.class, () -> new RuleSetCompositionPublication(
-                    "snapshot-2", "ruleset-a", 2, invalidHash));
+                    "snapshot-2", "ruleset-a", "evaluate", 2, invalidHash));
         }
     }
 }
