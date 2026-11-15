@@ -1,40 +1,28 @@
 # Praxis Config Contracts
 
-`praxis-config-contracts` is the lightweight, framework-neutral Maven boundary
-used by Java hosts that consume published Praxis configuration without embedding
-the complete `praxis-config-starter` control plane.
+`praxis-config-contracts` é a fronteira Maven leve e neutra em relação a frameworks usada por hosts Java da [**Praxis Platform**](https://praxisui.dev/) que consomem configurações e cabeças publicadas sem precisar embarcar o plano de controle completo de [`praxis-config-starter`](https://github.com/codexrodrigues/praxis-config-starter).
 
-The contracts are deliberately small:
+## Papel na Solução Praxis, Diferencial e Ganho em Tokens de IA
 
-- `PublishedRuleSnapshotHeadScope` identifies tenant, environment and RuleSet;
-- `PublishedRuleSnapshotHead` separates immutable snapshot content identity from
-  mutable activation identity and preserves explicit activation, rollback or an
-  active-head read, including retained historical activation provenance;
-- `PublishedRuleSnapshotHeadActivationType` closes that provenance vocabulary as
-  `ACTIVATED`, `ROLLED_BACK` or `ACTIVE`; `PUBLISHED` remains a historical
-  provenance value for prior publication that also selected a head;
-- `PublishedRuleSnapshotHeadReader` is the read port implemented by a governed
-  Config adapter or by an authenticated remote adapter owned by the host.
-- `RuleSetCompositionCandidateRequest` and `RuleSetCompositionCandidateCommand`
-  identify an exact promoted definition, validity window and inspected digest;
-- `RuleSetCompositionCandidate`, `RuleSetCompositionSource` and
-  `RuleSetCompositionAction` expose only safe provenance and server-authorized
-  operations, never the executable RuleSet graph;
-- `RuleSetCompositionPublication` is a redacted publication-only receipt containing
-  `snapshotKey`, `ruleSetKey`, `ruleSetVersion` and `snapshotContentHash`. It carries
-  no head ETag, activation revision or activation classification and grants no
-  execution readiness. Explicit activation produces the separate head contract.
-- `DomainRuleTestRunRecordRequest` and its result/evidence records are the
-  framework-neutral transport vocabulary used by runtime hosts to submit
-  idempotent, redacted candidate/active/baseline evidence to the Config control
-  plane without importing Starter persistence or auto-configuration.
+Na arquitetura **Descreva Uma Vez, Opere em Todo Lugar** da plataforma, regras de negócio (`decisionKind = BUSINESS`, via [`praxis-rules-engine`](https://github.com/codexrodrigues/praxis-rules-engine)), políticas de autorização e proteção de dados (`decisionKind = AUTHORIZATION`, via [`praxis-authz-contracts`](https://github.com/codexrodrigues/praxis-authz-contracts), [`praxis-authz-enforcement-core`](https://github.com/codexrodrigues/praxis-authz-enforcement-core), [`praxis-authz-opa`](https://github.com/codexrodrigues/praxis-authz-opa) e [`praxis-authz-starter`](https://github.com/codexrodrigues/praxis-authz-starter)) e metadados semânticos ([`praxis-metadata-starter`](https://github.com/codexrodrigues/praxis-metadata-starter)) convergem no mesmo PAP governado no [`praxis-policy-studio`](https://github.com/codexrodrigues/praxis-policy-studio).
 
-This artifact owns no persistence, authoring, approval, publication, rollback,
-HTTP client, Spring auto-configuration or controller. `praxis-config-starter`
-continues to own those control-plane concerns. `praxis-rules-engine` continues to
-own `PublishedRuleSnapshot` and deterministic compilation/evaluation.
+- **Problema corporativo resolvido:** Evita que microserviços consumidores ou gateways tenham de importar bancos de dados de configuração, WebClients internos ou auto-configuração completa do Control Plane apenas para ler qual cabeça (`PublishedRuleSnapshotHead`) está ativa ou enviar evidências redigidas de execução;
+- **À frente do mercado e economia de tokens para agentes:** Contratos enxutos, explícitos e livres de dependências Spring permitem que ferramentas, gateways, runtimes sem container e LLMs leiam e integrem o protocolo de ativação/evidência com mínimo contexto em memória, separando identidade imutável de conteúdo (`snapshotKey`, `snapshotContentHash`) da identidade mutável de ativação.
 
-## Dependency
+Os contratos são deliberadamente enxutos:
+
+- `PublishedRuleSnapshotHeadScope` identifica tenant, ambiente e `RuleSet`;
+- `PublishedRuleSnapshotHead` separa a identidade imutável do conteúdo do snapshot da identidade mutável de ativação e preserva ativação explícita, rollback ou leitura de cabeça ativa, incluindo proveniência histórica retida;
+- `PublishedRuleSnapshotHeadActivationType` fecha esse vocabulário de proveniência como `ACTIVATED`, `ROLLED_BACK` ou `ACTIVE` (`PUBLISHED` permanece apenas como valor histórico de publicação anterior que também selecionava uma cabeça);
+- `PublishedRuleSnapshotHeadReader` é a porta de leitura implementada por um adaptador governado de Config ou por um adaptador remoto autenticado pertencente ao host;
+- `RuleSetCompositionCandidateRequest` e `RuleSetCompositionCandidateCommand` identificam exatamente uma definição promovida, janela de validade e digest inspecionado;
+- `RuleSetCompositionCandidate`, `RuleSetCompositionSource` e `RuleSetCompositionAction` expõem apenas proveniência segura e operações autorizadas pelo servidor, nunca o grafo executável completo do `RuleSet`;
+- `RuleSetCompositionPublication` é um recibo redigido apenas de publicação contendo `snapshotKey`, `ruleSetKey`, `ruleSetVersion` e `snapshotContentHash` (não carrega `ETag` de cabeça, revisão de ativação nem concessão de prontidão de execução — a ativação explícita produz o contrato de cabeça separado);
+- `DomainRuleTestRunRecordRequest` e seus registros de resultado/evidência formam o vocabulário neutro de transporte usado pelos hosts em runtime para submeter evidências idempotentes e redigidas de candidato/ativo/baseline ao plano de controle Config sem importar persistência nem auto-configuração do Starter.
+
+Este artefato **não** possui persistência, autoria, aprovação, publicação, rollback, cliente HTTP, auto-configuração Spring nem controllers. [`praxis-config-starter`](https://github.com/codexrodrigues/praxis-config-starter) continua sendo o dono do plano de controle (PAP), enquanto [`praxis-rules-engine`](https://github.com/codexrodrigues/praxis-rules-engine) governa `PublishedRuleSnapshot` (`decisionKind = BUSINESS`) e a família `praxis-authz-*` governa autorização/escopo/mascaramento (`decisionKind = AUTHORIZATION`).
+
+## Dependência Maven
 
 ```xml
 <dependency>
@@ -50,55 +38,32 @@ until its official release; the earlier `0.1.0-beta.4` does not provide it.
 
 ## Publication-only migration (G2)
 
-The source now depends on `praxis-rules-engine` `0.1.0-beta.16` (engine contract
-1.5). `RuleSetCompositionPublication` keeps the four immutable identity fields
-that already existed and removes `headEtag`, `activationRevision` and
-`activationType`. This is a deliberate beta breaking change, without a parallel
-receipt, nullable activation placeholders or a compatibility mode.
+O código atual depende de `praxis-rules-engine` `0.1.0-beta.16` (contrato de engine `1.5`). `RuleSetCompositionPublication` mantém os quatro campos imutáveis de identidade já existentes e remove `headEtag`, `activationRevision` e `activationType`. Trata-se de uma *breaking change* deliberada da fase beta, sem recibo paralelo, placeholders anuláveis de ativação nem modo de compatibilidade.
 
-A Config publication adapter maps those identities from the approved stored
-snapshot and its canonical content hash. Publication does not create an active
-head; a host can review or preload the immutable candidate before the separate
-governed activation. The content hash must never substitute for a mutable head
-ETag. `PublishedRuleSnapshotHead` still requires a real non-null selection,
-positive activation revision and control-plane provenance. Historical
-`PUBLISHED` provenance is retained without granting new execution authority.
+Um adaptador de publicação do Config mapeia essas identidades a partir do snapshot armazenado aprovado e do seu hash canônico de conteúdo. A publicação por si só não cria uma cabeça ativa (*head*); o host pode revisar ou pré-carregar o candidato imutável antes da ativação governada separada. O hash de conteúdo nunca deve substituir uma `ETag` mutável de cabeça. `PublishedRuleSnapshotHead` continua exigindo seleção real não nula, revisão de ativação positiva e proveniência do plano de controle; a proveniência histórica `PUBLISHED` é preservada sem conceder nova autoridade de execução.
 
-Publish the revised Contracts artifact officially before adopting its exact
-coordinate in Config/host consumers. Update their constructor calls and HTTP
-mappings in the same cycle: publication returns the immutable receipt, while
-activation/rollback returns the separate head view. Then prove consumer builds
-with published dependencies; a local Maven install does not close that gate.
+Publique oficialmente o artefato revisado de `praxis-config-contracts` antes de adotar sua coordenada exata nos consumidores de Config e hosts. Atualize chamadas de construtor e mapeamentos HTTP no mesmo ciclo: publicação devolve o recibo imutável, enquanto ativação/rollback devolvem a visão separada de cabeça. Em seguida, comprove os builds consumidores usando dependências publicadas; um `mvn install` local não fecha esse gate.
 
-## Earlier Test Run contract
+## Contrato Anterior de Test Run
 
-Version `0.1.0-beta.4` adds the host-neutral Policy Studio Test Run transport:
-an explicit idempotency key, one independent redacted baseline lane per
-scenario, sanitized operational evidence and the corresponding receipt. It does
-not add a recorder implementation, HTTP client, controller or persistence.
-Those remain owned by the Config control plane and each authenticated host
-adapter. A local Maven install is not downstream release evidence.
+A versão `0.1.0-beta.4` adiciona o transporte neutro de host para o *Test Run* do Policy Studio: uma chave de idempotência explícita, uma trilha independente de baseline redigido por cenário, evidência operacional sanitizada e o recibo correspondente. Este pacote não inclui implementação de gravador (*recorder*), cliente HTTP, controller ou persistência — essas responsabilidades continuam no plano de controle [`praxis-config-starter`](https://github.com/codexrodrigues/praxis-config-starter) e em cada adaptador autenticado de host. Um install Maven local não constitui evidência de release downstream.
 
-## Beta.4 adoption order
+## Ordem de Adoção da `beta.4`
 
-1. Verify and publish `0.1.0-beta.4` through the official tag workflow.
-2. Migrate Config Starter and Quickstart from Starter-owned Test Run DTOs to
-   these records without creating compatibility aliases.
-3. Keep scenario execution, baseline observation and redaction host-owned;
-   Config owns validation, idempotency, persistence and stage gates.
-4. Implement the Ergon transport adapter against this artifact only after its
-   domain-specific admission gate; never import Config Starter into the host.
+1. Verifique e publique `0.1.0-beta.4` exclusivamente pelo workflow oficial de tag.
+2. Migre `praxis-config-starter` e [`praxis-api-quickstart`](https://github.com/codexrodrigues/praxis-api-quickstart) dos DTOs de Test Run pertencentes ao Starter para estes registros sem criar aliases de compatibilidade.
+3. Mantenha a execução de cenários, observação de baseline e redação sob domínio do host; Config responde pela validação, idempotência, persistência e gates de estágio.
+4. Implemente o adaptador de transporte de domínio contra este artefato apenas após seu gate específico de admissão; nunca importe `praxis-config-starter` dentro de um host consumidor.
 
-## Gate
+## Gate de Verificação Local
 
-Use Java 21 and Maven 3.9 or newer:
+Use Java 21 e Maven `3.9` ou superior:
 
 ```powershell
 mvn clean verify
 ```
 
-Releases are created only through the official GitHub Actions workflow. See
-[RELEASING.md](RELEASING.md) for secrets, tagging and Maven Central verification.
+As releases são criadas apenas pelo workflow oficial do GitHub Actions. Consulte [RELEASING.md](RELEASING.md) para segredos, criação de tags e verificação no Maven Central.
 
 ## Política de CI e publicação
 

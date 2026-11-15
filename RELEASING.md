@@ -1,33 +1,33 @@
-# Releasing — Praxis Config Contracts
+# Guia de Release — Praxis Config Contracts
 
-## Public line
+## Linha pública
 
-The active public line is `0.1.0-beta.*`. Compatible corrections remain on this line while the contract is validated by `praxis-config-starter`, Quickstart and Ergon. A stable release requires verified downstream consumption; a new major requires a governed breaking-change plan.
+A linha pública vigente é `0.1.0-beta.*`. Correções compatíveis permanecem nessa linha enquanto o contrato é validado por `praxis-config-starter`, Quickstart e aplicações corporativas consumidoras. Um release estável exige consumo downstream verificado; uma nova versão major requer plano governado de breaking change.
 
-## Required repository secrets
+## Segredos obrigatórios no repositório
 
 - `CENTRAL_TOKEN_USER`
 - `CENTRAL_TOKEN_PASS`
 - `GPG_PRIVATE_KEY`
 - `GPG_PASSPHRASE`
-- `GPG_KEY_ID` (optional)
-- `RELEASE_PAT`, with permission to push repository contents
+- `GPG_KEY_ID` (opcional)
+- `RELEASE_PAT`, com permissão para enviar alterações para o repositório
 
-`RELEASE_PAT` is required because the workflow-created tag must trigger the separate tag publication run.
+`RELEASE_PAT` é necessário porque a tag criada pelo workflow precisa disparar a execução separada de publicação pela tag.
 
-## Release flow
+## Fluxo de release
 
-1. Confirm the intended commit is on remote `main` and local validation is green.
-2. Run locally with Java 21:
+1. Confirme que o commit pretendido está em `main` remoto e que a validação local está verde.
+2. Execute localmente com Java 21:
 
    ```powershell
    mvn -B clean verify
    ```
 
-3. In GitHub Actions, run **Release Praxis Config Contracts** on `main` with `create_tag=true` and either an explicit version or `bump`/`preid`.
-4. The workflow persists the resolved version in `pom.xml`, creates the annotated `v<semver>` tag and pushes both atomically.
-5. The tag run verifies ancestry, the tagged version and lightweight dependencies, runs tests, then signs the POM/JAR/sources/Javadocs and publishes through the Central Portal.
-6. Wait for the Maven Central availability probe to pass.
-7. Build an isolated consumer against the public coordinate. A local Maven install is not release evidence.
+3. No GitHub Actions, execute **Release Praxis Config Contracts** em `main` com `create_tag=true` e uma versão explícita ou `bump`/`preid`.
+4. O workflow grava a versão resolvida no `pom.xml`, cria a tag anotada `v<semver>` e envia ambos atomicamente.
+5. A execução pela tag verifica ancestralidade, versão marcada e dependências leves, roda os testes, assina POM/JAR/sources/Javadocs e publica pelo Portal do Maven Central.
+6. Aguarde a aprovação da sondagem de disponibilidade no Maven Central.
+7. Compile um consumidor isolado contra a coordenada pública. Instalação local no Maven não constitui evidência de release.
 
-Do not create release tags manually, run `mvn deploy` locally or bypass a failed CI/release gate.
+Não crie tags de release manualmente, não execute `mvn deploy` localmente nem contorne um gate de CI/release que falhou.
