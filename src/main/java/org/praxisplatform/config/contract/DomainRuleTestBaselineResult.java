@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Independent, redacted result returned by the declared baseline authority for one scenario.
  *
- * <p>Raw Oracle rows, runtime facts, SQL, exception messages and execution traces are deliberately
+ * <p>Raw baseline database rows, runtime facts, SQL, exception messages and execution traces are deliberately
  * absent. A host may publish only bounded reason/effect codes plus digests of its plan and redacted
  * trace.</p>
  *
