@@ -34,7 +34,7 @@ class DomainRuleTestRunContractTest {
         var request = new DomainRuleTestRunRecordRequest(
                 "run-1", 1, "D".repeat(64), Instant.EPOCH, "UTC", null, null, 0,
                 new DomainRuleTestBaselineEvidence(
-                        "LEGACY_ORACLE", "oracle-proof", "E".repeat(64), Instant.EPOCH, "ELIGIBLE"),
+                        "LEGACY_ORACLE", "baseline-proof", "E".repeat(64), Instant.EPOCH, "ELIGIBLE"),
                 new ArrayList<>(List.of(scenario)));
 
         reasons.add("MUTATED");
